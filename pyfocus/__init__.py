@@ -463,9 +463,34 @@ class OmniFocus(Section, Context):
     def _inbox_task_getitem(self, item):
         return InboxTask(self._ref.inbox_tasks[item])
 
-
-class Perspective(OFObject):
-    pass
+    def parse(self, text):
+        """
+        The first line, or any lines that start with '--' are taken to be the first
+        lines of new tasks. Other lines are notes on the preceding task.  
+        
+        If you choose, you can add a note on the same line as a task using
+        '//', for example "title // note". Anything after the last '//' in the
+        line will be considered a note. Double-slashes in URLs will be skipped
+        (so "http://www.foo.com" won't start a note in the middle of the URL).  
+        
+        ">" or "::" can be used to specify a project. The double-colon is nicer
+        for the iPhone keyboard since it is on the first shifted keypad (> is
+        on the math symbol keyboard). The project string will be matched
+        exactly as if entered in a project cell in interface.  
+        
+        "@" can be used to specify a context, again with matching as in the
+        interface.  
+        
+        "#" can be used to specify dates, using our relative date parsing. If
+        there is only one date, it is the due date, if there are two, the first
+        is the start date and the second is the due date (the order they appear
+        in the interface).  
+        
+        "$" can be used to give a time estimate.
+        """
+        refs = self._ref.parse_tasks(with_transport_text=text)
+        for ref in refs:
+            yield Task(ref)
 
 
 # The singleton!
